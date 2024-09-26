@@ -1,0 +1,38 @@
+---
+title: "MedicarePost-Acute-Care"
+output: html_document
+date: "2024-09-26"
+---
+
+## Introduction.
+## Data
+## Assignment
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(caret)
+library(kernlab)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(manipulate)
+library(Hmisc)
+library(pastecs)
+library(MASS)
+library(broom)
+library(tidyverse)
+library(AppliedPredictiveModeling)
+require(stats); require(graphics);require(ggplot2);require(GGally)
+
+
+
+```
+# load the data 
+```{r echo=FALSE,include=TRUE ,message=FALSE}
+url <-"/Users/nancypulido/Library/Mobile Documents/com~apple~CloudDocs/medicalDataAnalysis/Medicare Post-Acute Care and Hospice - by Geography & Provider/2022/ry2024_pacpuf_main_2020_2022s.csv"
+
+# List the extracted files (Optional, just to verify the contents)
+dataRaw <- read.csv(url,na.strings = c("", "NA", "NULL"))
+
+```
