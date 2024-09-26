@@ -10,7 +10,7 @@ date: "2024-09-26"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
+library(readxl)
 library(caret)
 library(kernlab)
 library(dplyr)
@@ -35,4 +35,12 @@ url <-"/Users/nancypulido/Library/Mobile Documents/com~apple~CloudDocs/medicalDa
 # List the extracted files (Optional, just to verify the contents)
 dataRaw <- read.csv(url,na.strings = c("", "NA", "NULL"))
 
+# Read xlsx file
+data <- read_excel("file.xlsx")
+
+```
+
+```{r echo=FALSE,include=TRUE ,message=FALSE}
+
+str(dataRaw)
 ```
