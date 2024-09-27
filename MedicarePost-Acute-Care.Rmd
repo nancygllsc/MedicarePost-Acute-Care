@@ -1,0 +1,154 @@
+---
+title: "MedicarePost-Acute-Care"
+output: html_document
+date: "2024-09-26"
+---
+
+## Introduction.
+## Data
+## Assignment
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(caret)
+library(kernlab)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(manipulate)
+library(Hmisc)
+library(pastecs)
+library(MASS)
+library(broom)
+library(tidyverse)
+library(AppliedPredictiveModeling)
+library(maps)
+require(stats); require(graphics);require(ggplot2);require(GGally)
+
+
+
+```
+# load the data 
+```{r echo=FALSE,include=TRUE ,message=FALSE}
+url <-"/Users/nancypulido/Library/Mobile Documents/com~apple~CloudDocs/medicalDataAnalysis/MedicarePost-Acute-Care/MedicarePost-Acute-Care/Medicare Post-Acute Care and Hospice - by Geography & Provider/2022/ry2024_pacpuf_main_2020_2022s.csv"
+
+# List the extracted files (Optional, just to verify the contents)
+main_2020_2022s <- read.csv(url,na.strings = c("", "NA", "NULL"))
+
+# Read xlsx file
+ Data_Dictionary_2024_FINAL<- read_excel("/Users/nancypulido/Library/Mobile Documents/com~apple~CloudDocs/medicalDataAnalysis/MedicarePost-Acute-Care/MedicarePost-Acute-Care/Medicare Post-Acute Care and Hospice - by Geography & Provider/2022/MUP_PAC_RY24_Data_Dictionary_2024_FINAL.xlsx")
+ main_2014_2019s<-read_excel("/Users/nancypulido/Library/Mobile Documents/com~apple~CloudDocs/medicalDataAnalysis/MedicarePost-Acute-Care/MedicarePost-Acute-Care/Medicare Post-Acute Care and Hospice - by Geography & Provider/2022/ry2024_pacpuf_main_2014_2019s.xlsx")
+ spplmntl_HH_2014_2019s<-read_excel("/Users/nancypulido/Library/Mobile Documents/com~apple~CloudDocs/medicalDataAnalysis/MedicarePost-Acute-Care/MedicarePost-Acute-Care/Medicare Post-Acute Care and Hospice - by Geography & Provider/2022/ry2024_pacpuf_spplmntl_HH_2014_2019s.xlsx")
+ 
+ spplmntl_HH_2020_2022s<-read_excel("/Users/nancypulido/Library/Mobile Documents/com~apple~CloudDocs/medicalDataAnalysis/MedicarePost-Acute-Care/MedicarePost-Acute-Care/Medicare Post-Acute Care and Hospice - by Geography & Provider/2022/ry2024_pacpuf_spplmntl_HH_2020_2022s.xlsx")
+ 
+spplmntl_IRF_2014_2022s<-read_excel("/Users/nancypulido/Library/Mobile Documents/com~apple~CloudDocs/medicalDataAnalysis/MedicarePost-Acute-Care/MedicarePost-Acute-Care/Medicare Post-Acute Care and Hospice - by Geography & Provider/2022/ry2024_pacpuf_spplmntl_IRF_2014_2022s.xlsx")
+
+
+
+pplmntl_SNF_2014_2019s<-read_excel("/Users/nancypulido/Library/Mobile Documents/com~apple~CloudDocs/medicalDataAnalysis/MedicarePost-Acute-Care/MedicarePost-Acute-Care/Medicare Post-Acute Care and Hospice - by Geography & Provider/2022/ry2024_pacpuf_spplmntl_SNF_2014_2019s.xlsx")
+
+
+spplmntl_SNF_2020_2022s<-read_excel("/Users/nancypulido/Library/Mobile Documents/com~apple~CloudDocs/medicalDataAnalysis/MedicarePost-Acute-Care/MedicarePost-Acute-Care/Medicare Post-Acute Care and Hospice - by Geography & Provider/2022/ry2024_pacpuf_spplmntl_SNF_2020_2022s.xlsx")
+
+data<-c("main_2020_2022s","main_2014_2019s","spplmntl_HH_2014_2019s","spplmntl_HH_2020_2022s","spplmntl_IRF_2014_2022s","spplmntl_IRF_2014_2022s","pplmntl_SNF_2014_2019s")
+
+```
+
+```{r echo=FALSE,include=TRUE ,message=FALSE}
+
+for (x in data){
+  print(x) # Print the name of the object
+  #str(mget(x))
+  obj <- get(x)  # Retrieve the object by its name
+  #print(unique(obj$YEAR))
+  
+}
+
+```
+#Graph
+```{r echo=FALSE,message=FALSE,warning=FALSE}
+dataCOLS <- colnames(main_2020_2022s)
+
+# Totals by variable - all 
+for(x in 10:length(dataCOLS)){
+  col_name <- dataCOLS[x]  # Extract the column name
+  new_col_name <- paste0("State", col_name)  # Create new dynamic column name
+  
+  # Calculate totals by state 
+  CountByStates <- main_2020_2022s %>% 
+    group_by(STATE) %>%
+    dplyr::summarize(!!new_col_name := sum(as.numeric(ifelse(!!sym(col_name) == "N/A", 0, !!sym(col_name))), na.rm = TRUE))
+  
+  # Convert state abbreviations to full state names
+  CountByStates$state_full <- state.name[match(CountByStates$STATE, state.abb)]
+  
+  # Make state_full lowercase
+  CountByStates$state_full <- tolower(CountByStates$state_full)
+  
+  # Graphs
+  # Get USA map data
+  usa_map <- map_data("state")
+  
+  # Change state_full column to region
+  colnames(CountByStates)[colnames(CountByStates) == "state_full"] <- "region"
+  
+  # Join your data with the USA map data
+  data_joined <- merge(usa_map, CountByStates, sort = FALSE, by = "region")
+  
+  # Dynamically reference the column created in `CountByStates` for fill
+  plot1 <- ggplot(data_joined, aes(long, lat)) +
+    geom_polygon(aes(group = group, fill = !!sym(new_col_name))) +
+    coord_map("albers", lat0 = 45.5, lat1 = 29.5) +
+    labs(fill = new_col_name, 
+         title = "Medicare Post-Acute Care 2000-2022",
+         subtitle = new_col_name,
+         caption = "Based on Medicare Report")  
+
+  # Print the plot
+  print(plot1)
+}
+
+
+
+#-----
+
+"
+calculate totals by state 
+CountByStates<- main_2020_2022s %>% 
+  group_by(STATE) %>%
+  dplyr::summarize(StateTOT_CHRG_AMT = sum(TOT_CHRG_AMT))
+
+# Convert state abbreviations to full state names
+CountByStates$state_full <- state.name[match(CountByStates$STATE, state.abb)]
+
+#make state_full lower case 
+CountByStates$state_full<- tolower(CountByStates$state_full)
+
+print(CountByStates)
+"
+
+```
+
+```{r echo=FALSE,include=TRUE ,message=FALSE}
+"
+if (require('maps')) {
+# Get USA map data
+usa_map <- map_data('state')
+
+#change STATE coulmn to region
+colnames(CountByStates)[colnames(CountByStates)=='state_full']<-'region'
+
+# Join your data with the USA map data
+data_joined <- merge(usa_map,CountByStates,sort = FALSE, by='region')
+  
+
+ggplot(data_joined, aes(long, lat)) +
+  geom_polygon(aes(group = group, fill =StateTOT_CHRG_AMT )) +
+  coord_map('albers',  lat0 = 45.5, lat1 = 29.5)
+}
+
+"
+
+```
