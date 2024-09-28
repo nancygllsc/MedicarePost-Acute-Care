@@ -13,11 +13,18 @@ library(shiny)
 fluidPage(
 
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    titlePanel("Medicare Post Acute Care by Geography and Provider 2020-2022"),
 
     # Sidebar with a slider input for number of bins
     sidebarLayout(
+      
+      
         sidebarPanel(
+          selectInput(inputId="DataVariable",
+                     label="Select",
+                     choices=dataCOLS,
+                     selected="TOT_CHRG_AMT"
+          ),
             sliderInput("bins",
                         "Number of bins:",
                         min = 1,
@@ -27,7 +34,8 @@ fluidPage(
 
         # Show a plot of the generated distribution
         mainPanel(
-            plotOutput("distPlot")
+            plotOutput("distPlot"),
+            plotOutput("usaMap")
         )
     )
 )
